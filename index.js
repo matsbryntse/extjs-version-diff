@@ -90,9 +90,9 @@ App = {
 
     // Try to get a readable type
     getType : function (obj) {
-        if (obj.$className)     return obj.$className;
-        if (Ext.isArray(obj))   return 'Array';
-        if (Ext.isDate(obj))    return 'Date';
+        if (obj && obj.$className)  return obj.$className;
+        if (Ext.isArray(obj))       return 'Array';
+        if (Ext.isDate(obj))        return 'Date';
 
         return typeof obj;
     },
@@ -164,17 +164,16 @@ App = {
         var newClasses = Object.keys(ExtNew.ClassManager.classes);
         var oldClasses = Object.keys(ExtOld.ClassManager.classes);
 
-        // Check for native class augmentations
         oldClasses.forEach(function (cls) {
 
             if (processed[cls]) return;
 
             var clsNew = ExtNew.ClassManager.get(cls);
+            var clsOld = ExtOld.ClassManager.get(cls);
 
             if (!clsNew) {
                 removed.push(cls);
             } else {
-                var clsOld = ExtOld.ClassManager.get(cls);
 
                 var diff = me.getObjectDiff(clsNew, clsOld, clsOld.$className, true);
 
@@ -182,13 +181,23 @@ App = {
                     staticChanged[clsOld.$className] = diff;
                 }
 
+                var singletonChanged = (clsOld.singleton !== clsNew.singleton);
+
+                if (singletonChanged) {
+                    staticChanged[clsOld.$className] = {
+                        prop   : 'singleton',
+                        type   : 'singleton_changed',
+                        old    : String(!!clsOld.singleton),
+                        new    : String(!!clsNew.singleton),
+                        static : true
+                    };
+                }
                 // Prototype properties
-                if (clsOld.prototype) {
-                    var isSingleton = (clsOld.singleton || clsNew.singleton);
+                else if (clsOld.prototype) {
 
                     // Make subclasses to provoke additional properties being created in onClassExtended (Ext.data.Model etc)
-                    var oldSub = isSingleton ? clsOld : ExtOld.define((i++).toString(), { extend : clsOld.$className });
-                    var newSub = isSingleton ? clsNew : ExtNew.define((i++).toString(), { extend : clsOld.$className });
+                    var oldSub = ExtOld.define((i++).toString(), { extend : clsOld.$className });
+                    var newSub = ExtNew.define((i++).toString(), { extend : clsOld.$className });
 
                     diff = me.getObjectDiff(newSub.prototype, oldSub.prototype, clsOld.$className);
 
@@ -198,7 +207,10 @@ App = {
                 }
             }
 
-            (Ext.isArray(cls) ? cls : [cls]).forEach(function(name) { processed[name] = 1; });
+            // Mark it as processed along with any class aliases
+            if (clsOld.alternateClassName) {
+                (Ext.isArray(clsOld.alternateClassName) ? clsOld.alternateClassName : [clsOld.alternateClassName]).forEach(function(name) { processed[name] = 1; });
+            }
         });
 
         newClasses.forEach(function (cls) {
