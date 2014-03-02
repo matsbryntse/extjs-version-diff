@@ -1,5 +1,21 @@
 App = {
 
+    /**
+     * @cfg url1 Set the url to first Ext JS version
+     */
+    url1   : 'http://lh/ext-5.0.0.470/build/ext-all-debug.js',
+
+    /**
+     * @cfg url2 Set the url to second Ext JS version
+     */
+    url2   : 'http://lh/extjs-4.2.2/ext-all-debug.js',
+
+    frame1 : null,
+    frame2 : null,
+
+    ExtNew : null,
+    ExtOld : null,
+
     // Skip some static stuff we don't care about
     staticIgnoreRe : (function () {
         var keys = Object.keys(Ext.Base).map(function (k) {
@@ -17,15 +33,6 @@ App = {
 
         return new RegExp(keys.concat(['alternateClassName', 'superclass']).join('|'));
     })(),
-
-    url1   : 'http://lh/ext-5.0.0.470/build/ext-all-debug.js',
-    frame1 : null,
-
-    url2   : 'http://lh/extjs-4.2.2/ext-all-debug.js',
-    frame2 : null,
-
-    ExtNew : null,
-    ExtOld : null,
 
     init : function () {
         var me = this;
@@ -178,7 +185,7 @@ App = {
                 // Prototype properties
                 if (clsOld.prototype) {
                     var isSingleton = (clsOld.singleton || clsNew.singleton);
-                    
+
                     // Make subclasses to provoke additional properties being created in onClassExtended (Ext.data.Model etc)
                     var oldSub = isSingleton ? clsOld : ExtOld.define((i++).toString(), { extend : clsOld.$className });
                     var newSub = isSingleton ? clsNew : ExtNew.define((i++).toString(), { extend : clsOld.$className });

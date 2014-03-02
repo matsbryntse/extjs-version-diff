@@ -1,0 +1,1 @@
+This is a basic diff tool highlighting differences between two versions of Ext JS. The code quality is rather messy, at best. If you still decide to read it and later require an emergency visit to the eye doctor, don’t tell me you weren’t warned :)
