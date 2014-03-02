@@ -1,5 +1,6 @@
 App = {
 
+    // Skip some static stuff we don't care about
     staticIgnoreRe : (function () {
         var keys = Object.keys(Ext.Base).map(function (k) {
             return Ext.String.escapeRegex(k)
@@ -8,6 +9,7 @@ App = {
         return new RegExp(keys.concat(['alternateClassName', 'superclass', 'hasListeners', 'HasListeners']).join('|'));
     })(),
 
+    // Skip some prototype stuff we don't care about
     ignoreRe : (function () {
         var keys = Object.keys(Ext.Base.prototype).map(function (k) {
             return Ext.String.escapeRegex(k)
@@ -79,6 +81,7 @@ App = {
         changedPrototypeTpl.append("four", data.prototypeChanged);
     },
 
+    // Try to get a readable type
     getType : function (obj) {
         if (obj.$className)     return obj.$className;
         if (Ext.isArray(obj))   return 'Array';
@@ -175,10 +178,12 @@ App = {
                 // Prototype properties
                 if (clsOld.prototype) {
                     var isSingleton = (clsOld.singleton || clsNew.singleton);
+                    
+                    // Make subclasses to provoke additional properties being created in onClassExtended (Ext.data.Model etc)
                     var oldSub = isSingleton ? clsOld : ExtOld.define((i++).toString(), { extend : clsOld.$className });
                     var newSub = isSingleton ? clsNew : ExtNew.define((i++).toString(), { extend : clsOld.$className });
 
-                    diff =  me.getObjectDiff(newSub.prototype, oldSub.prototype, clsOld.$className);
+                    diff = me.getObjectDiff(newSub.prototype, oldSub.prototype, clsOld.$className);
 
                     if (diff.length > 0) {
                         protChanged[clsOld.$className] = diff;
