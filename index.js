@@ -3,7 +3,7 @@ App = {
     /**
      * @cfg url1 Set the url to first Ext JS version
      */
-    url1   : 'http://lh/ext-5.0.0.470/build/ext-all-debug.js',
+    url1   : 'http://lh/extjs-4.1.3/ext-all-debug.js',
 
     /**
      * @cfg url2 Set the url to second Ext JS version
@@ -196,14 +196,16 @@ App = {
                 else if (clsOld.prototype) {
 
                     // Make subclasses to provoke additional properties being created in onClassExtended (Ext.data.Model etc)
-                    var oldSub = ExtOld.define((i++).toString(), { extend : clsOld.$className });
-                    var newSub = ExtNew.define((i++).toString(), { extend : clsOld.$className });
+                    var oldSub = ExtOld.define(i.toString(), { extend : clsOld.$className });
+                    var newSub = ExtNew.define(i.toString(), { extend : clsOld.$className });
 
                     diff = me.getObjectDiff(newSub.prototype, oldSub.prototype, clsOld.$className);
 
                     if (diff.length > 0) {
                         protChanged[clsOld.$className] = diff;
                     }
+
+                    i++;
                 }
             }
 
