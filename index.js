@@ -3,7 +3,7 @@ App = {
     /**
      * @cfg url1 Set the url to first Ext JS version
      */
-    url1   : 'http://lh/extjs-4.1.3/ext-all-debug.js',
+    url1   : 'http://lh/ext-5.0.0.736/build/ext-all-debug.js',
 
     /**
      * @cfg url2 Set the url to second Ext JS version
@@ -105,7 +105,7 @@ App = {
             if ((static ? this.staticIgnoreRe : this.ignoreRe).test(p)) continue;
 
             try {
-                if (oldObj.hasOwnProperty(p)) {
+                if ((static && oldObj.hasOwnProperty(p)) || (!static && oldObj.superclass.hasOwnProperty(p))) {
                     // Check if the object exists on the clean window and also do a string comparison
                     // in case a builtin method has been overridden
                     if (!newObj.hasOwnProperty(p) && typeof newObj[p] == 'undefined') {
