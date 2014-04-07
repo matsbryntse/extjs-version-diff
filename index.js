@@ -1,3 +1,6 @@
+Ext.Loader.setConfig({ enabled : false });
+
+
 App = {
 
     /**
@@ -67,6 +70,8 @@ App = {
 
         var int = setInterval(function () {
             if (win1.Ext && win2.Ext) {
+                win1.onerror = function() { return true };
+                win2.onerror = function() { return true };
                 clearInterval(int);
 
                 me.scan(me.visualize);
@@ -90,6 +95,7 @@ App = {
 
     // Try to get a readable type
     getType : function (obj) {
+        if (obj === null) return 'null';
         if (obj && obj.$className)  return obj.$className;
         if (Ext.isArray(obj))       return 'Array';
         if (Ext.isDate(obj))        return 'Date';
@@ -105,7 +111,7 @@ App = {
             if ((static ? this.staticIgnoreRe : this.ignoreRe).test(p)) continue;
 
             try {
-                if ((static && oldObj.hasOwnProperty(p)) || (!static && oldObj.superclass.hasOwnProperty(p))) {
+                if ((oldObj.hasOwnProperty(p)) || (!isNaN(Number(oldObj.$className)) && oldObj.superclass.hasOwnProperty(p))) {
                     // Check if the object exists on the clean window and also do a string comparison
                     // in case a builtin method has been overridden
                     if (!newObj.hasOwnProperty(p) && typeof newObj[p] == 'undefined') {
@@ -196,10 +202,20 @@ App = {
                 else if (clsOld.prototype) {
 
                     // Make subclasses to provoke additional properties being created in onClassExtended (Ext.data.Model etc)
-                    var oldSub = ExtOld.define(i.toString(), { extend : clsOld.$className });
-                    var newSub = ExtNew.define(i.toString(), { extend : clsOld.$className });
+                    var oldSubClass = ExtOld.define(i.toString(), { extend : clsOld.$className });
+                    var newSubClass = ExtNew.define(i.toString(), { extend : clsOld.$className });
+                    var oldIns, newIns;
 
-                    diff = me.getObjectDiff(newSub.prototype, oldSub.prototype, clsOld.$className);
+                    // If we're lucky, we can instantiate the class too without args, and find more properties added in the constructor
+                    try
+                    {
+                        oldIns = new oldSubClass();
+                        newIns = new newSubClass();
+                    } catch(e) {
+                        oldIns = newIns = null;
+                    }
+
+                    diff = me.getObjectDiff(newIns || newSubClass.prototype, oldIns || oldSubClass.prototype, clsOld.$className);
 
                     if (diff.length > 0) {
                         protChanged[clsOld.$className] = diff;
