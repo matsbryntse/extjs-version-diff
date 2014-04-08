@@ -34,7 +34,7 @@ App = {
             return Ext.String.escapeRegex(k)
         });
 
-        return new RegExp(keys.concat(['alternateClassName', 'superclass']).join('|'));
+        return new RegExp(keys.concat(['id', 'alternateClassName', 'superclass']).join('|'));
     })(),
 
     init : function () {
@@ -70,8 +70,12 @@ App = {
 
         var int = setInterval(function () {
             if (win1.Ext && win2.Ext) {
-                win1.onerror = function() { return true };
-                win2.onerror = function() { return true };
+                win1.onerror = win2.Ext.Loader.loadScript = function() { return true };
+                win2.onerror = win1.Ext.Loader.loadScript = function() { return true };
+
+                Ext.fly('version1').update(win1.Ext.versions.extjs.toString());
+                Ext.fly('version2').update(win2.Ext.versions.extjs.toString());
+
                 clearInterval(int);
 
                 me.scan(me.visualize);
